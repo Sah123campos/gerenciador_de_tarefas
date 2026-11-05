@@ -1,0 +1,148 @@
+:root {
+    --fundo: #f4f5f7;
+    --superficie: #ffffff;
+    --texto: #1f2328;
+    --texto-suave: #656d76;
+    --borda: #d8dee4;
+    --primaria: #2563eb;
+    --primaria-escura: #1d4ed8;
+    --sucesso: #16a34a;
+    --perigo: #dc2626;
+    --aviso: #d97706;
+    --raio: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fundo: #0f1115;
+        --superficie: #181b21;
+        --texto: #e6e8eb;
+        --texto-suave: #9aa3ad;
+        --borda: #2c313a;
+        --primaria: #3b82f6;
+        --primaria-escura: #60a5fa;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    line-height: 1.5;
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.container.estreito { max-width: 640px; }
+main.container { padding-top: 24px; padding-bottom: 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 20px; }
+
+/* Cabeçalho */
+.cabecalho { background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.cabecalho-conteudo { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.logo { font-weight: 700; font-size: 1.2rem; color: var(--texto); text-decoration: none; }
+
+/* Botões */
+.botao {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--borda);
+    background: var(--superficie); color: var(--texto);
+    font: inherit; font-size: .9rem; text-decoration: none; cursor: pointer;
+}
+.botao:hover { border-color: var(--texto-suave); }
+.botao-primario { background: var(--primaria); border-color: var(--primaria); color: #fff; }
+.botao-primario:hover { background: var(--primaria-escura); border-color: var(--primaria-escura); }
+.botao-link { border-color: transparent; background: transparent; color: var(--texto-suave); }
+.botao-perigo { color: var(--perigo); }
+.botao-perigo:hover { border-color: var(--perigo); }
+.botao-pequeno { padding: 4px 10px; font-size: .8rem; }
+
+/* Alerta */
+.alerta {
+    padding: 12px 16px; margin-bottom: 20px; border-radius: var(--raio);
+    background: color-mix(in srgb, var(--sucesso) 12%, var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--sucesso) 40%, transparent);
+}
+
+/* Resumo */
+.resumo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.cartao {
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: 14px; text-decoration: none; color: inherit; display: flex; flex-direction: column;
+}
+.cartao.ativo { border-color: var(--primaria); box-shadow: 0 0 0 1px var(--primaria); }
+.cartao .numero { font-size: 1.6rem; font-weight: 700; }
+.cartao .rotulo { color: var(--texto-suave); font-size: .85rem; }
+
+/* Filtros */
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filtros input[type=search] { flex: 1 1 240px; }
+
+input, select, textarea {
+    font: inherit; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--borda); background: var(--superficie); color: var(--texto);
+    width: 100%;
+}
+.filtros select, .filtros input { width: auto; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--primaria); outline-offset: -1px; }
+.invalido { border-color: var(--perigo); }
+
+/* Lista */
+.lista-tarefas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.tarefa {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: 14px;
+}
+.tarefa.atrasada { border-left: 4px solid var(--perigo); }
+.tarefa.concluida .tarefa-titulo { text-decoration: line-through; color: var(--texto-suave); }
+.tarefa.concluida { opacity: .75; }
+.tarefa form { margin: 0; }
+
+.check {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--borda);
+    background: transparent; color: #fff; cursor: pointer; font-size: .8rem; line-height: 1; padding: 0;
+    margin-top: 2px;
+}
+.check:hover { border-color: var(--sucesso); }
+.tarefa.concluida .check { background: var(--sucesso); border-color: var(--sucesso); }
+
+.tarefa-corpo { flex: 1; min-width: 0; }
+.tarefa-titulo { font-weight: 600; overflow-wrap: anywhere; }
+.tarefa-descricao { color: var(--texto-suave); font-size: .9rem; margin-top: 2px; white-space: pre-line; overflow-wrap: anywhere; }
+
+.etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.etiqueta {
+    font-size: .75rem; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--borda); color: var(--texto-suave);
+}
+.prioridade-alta { color: var(--perigo); border-color: color-mix(in srgb, var(--perigo) 45%, transparent); }
+.prioridade-media { color: var(--aviso); border-color: color-mix(in srgb, var(--aviso) 45%, transparent); }
+.status-em_andamento { color: var(--primaria); border-color: color-mix(in srgb, var(--primaria) 45%, transparent); }
+.status-concluida { color: var(--sucesso); border-color: color-mix(in srgb, var(--sucesso) 45%, transparent); }
+.tarefa.atrasada .etiqueta-data { color: var(--perigo); border-color: var(--perigo); }
+
+.acoes { display: flex; gap: 6px; flex-shrink: 0; }
+
+.vazio { text-align: center; padding: 48px 16px; color: var(--texto-suave); }
+
+/* Formulário */
+.formulario {
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: 20px; display: flex; flex-direction: column; gap: 16px;
+}
+.campo { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.campo label { font-weight: 600; font-size: .9rem; }
+.linha { display: flex; gap: 12px; }
+.erro { color: var(--perigo); }
+.botoes { display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 640px) {
+    .resumo { grid-template-columns: repeat(2, 1fr); }
+    .linha { flex-direction: column; }
+    .tarefa { flex-wrap: wrap; }
+    .acoes { width: 100%; justify-content: flex-end; }
+    .filtros select, .filtros .botao { flex: 1; }
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head(${tarefa.id == null} ? 'Nova tarefa' : 'Editar tarefa')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container estreito">
+    <h1 th:text="${tarefa.id == null} ? 'Nova tarefa' : 'Editar tarefa'">Nova tarefa</h1>
+
+    <form th:action="${tarefa.id == null} ? @{/tarefas} : @{/tarefas/{id}(id=${tarefa.id})}"
+          th:object="${tarefa}" method="post" class="formulario" novalidate>
+
+        <div class="campo">
+            <label for="titulo">Título *</label>
+            <input type="text" id="titulo" th:field="*{titulo}" maxlength="100" autofocus
+                   th:classappend="${#fields.hasErrors('titulo')} ? 'invalido'">
+            <small class="erro" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}"></small>
+        </div>
+
+        <div class="campo">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" th:field="*{descricao}" rows="4" maxlength="1000"
+                      th:classappend="${#fields.hasErrors('descricao')} ? 'invalido'"></textarea>
+            <small class="erro" th:if="${#fields.hasErrors('descricao')}" th:errors="*{descricao}"></small>
+        </div>
+
+        <div class="linha">
+            <div class="campo">
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade" th:field="*{prioridade}">
+                    <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descricao}"></option>
+                </select>
+                <small class="erro" th:if="${#fields.hasErrors('prioridade')}" th:errors="*{prioridade}"></small>
+            </div>
+
+            <div class="campo">
+                <label for="status">Status</label>
+                <select id="status" th:field="*{status}">
+                    <option th:each="s : ${todosStatus}" th:value="${s}" th:text="${s.descricao}"></option>
+                </select>
+                <small class="erro" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></small>
+            </div>
+
+            <div class="campo">
+                <label for="dataVencimento">Vencimento</label>
+                <input type="date" id="dataVencimento" th:field="*{dataVencimento}">
+            </div>
+        </div>
+
+        <div class="botoes">
+            <a th:href="@{/tarefas}" class="botao botao-link">Cancelar</a>
+            <button type="submit" class="botao botao-primario">Salvar</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

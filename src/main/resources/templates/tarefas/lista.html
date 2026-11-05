@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Minhas tarefas')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+
+<main class="container">
+    <div th:if="${mensagem}" class="alerta" th:text="${mensagem}">Mensagem</div>
+
+    <section class="resumo">
+        <a th:href="@{/tarefas}" class="cartao" th:classappend="${filtroStatus == null} ? 'ativo'">
+            <span class="numero" th:text="${resumo['total']}">0</span>
+            <span class="rotulo">Total</span>
+        </a>
+        <a th:each="s : ${todosStatus}" th:href="@{/tarefas(status=${s})}"
+           class="cartao" th:classappend="${filtroStatus == s} ? 'ativo'">
+            <span class="numero" th:text="${resumo[s.name()]}">0</span>
+            <span class="rotulo" th:text="${s.descricao}">Status</span>
+        </a>
+    </section>
+
+    <form th:action="@{/tarefas}" method="get" class="filtros">
+        <input type="search" name="busca" th:value="${busca}" placeholder="Buscar por título ou descrição…">
+        <select name="status">
+            <option value="">Todos os status</option>
+            <option th:each="s : ${todosStatus}" th:value="${s}" th:text="${s.descricao}"
+                    th:selected="${filtroStatus == s}"></option>
+        </select>
+        <select name="prioridade">
+            <option value="">Todas as prioridades</option>
+            <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p.descricao}"
+                    th:selected="${filtroPrioridade == p}"></option>
+        </select>
+        <button type="submit" class="botao">Filtrar</button>
+        <a th:href="@{/tarefas}" class="botao botao-link">Limpar</a>
+    </form>
+
+    <div th:if="${#lists.isEmpty(tarefas)}" class="vazio">
+        <p>Nenhuma tarefa encontrada.</p>
+        <a th:href="@{/tarefas/nova}" class="botao botao-primario">Criar a primeira tarefa</a>
+    </div>
+
+    <ul class="lista-tarefas" th:unless="${#lists.isEmpty(tarefas)}">
+        <li th:each="t : ${tarefas}" class="tarefa"
+            th:classappend="${t.status.name() == 'CONCLUIDA'} ? 'concluida' : (${t.atrasada} ? 'atrasada')">
+
+            <form th:action="@{/tarefas/{id}/alternar(id=${t.id})}" method="post">
+                <button type="submit" class="check"
+                        th:title="${t.status.name() == 'CONCLUIDA'} ? 'Reabrir tarefa' : 'Marcar como concluída'"
+                        th:text="${t.status.name() == 'CONCLUIDA'} ? '✓' : ''"></button>
+            </form>
+
+            <div class="tarefa-corpo">
+                <div class="tarefa-titulo" th:text="${t.titulo}">Título</div>
+                <div class="tarefa-descricao" th:if="${t.descricao}" th:text="${t.descricao}">Descrição</div>
+                <div class="etiquetas">
+                    <span class="etiqueta" th:classappend="'prioridade-' + ${#strings.toLowerCase(t.prioridade)}"
+                          th:text="${t.prioridade.descricao}">Prioridade</span>
+                    <span class="etiqueta" th:classappend="'status-' + ${#strings.toLowerCase(t.status)}"
+                          th:text="${t.status.descricao}">Status</span>
+                    <span class="etiqueta etiqueta-data" th:if="${t.dataVencimento}"
+                          th:text="(${t.atrasada} ? 'Atrasada · ' : 'Vence ') + ${#temporals.format(t.dataVencimento, 'dd/MM/yyyy')}">
+                        Vence 01/01/2026
+                    </span>
+                </div>
+            </div>
+
+            <div class="acoes">
+                <a th:href="@{/tarefas/{id}/editar(id=${t.id})}" class="botao botao-pequeno">Editar</a>
+                <form th:action="@{/tarefas/{id}/excluir(id=${t.id})}" method="post"
+                      onsubmit="return confirm('Excluir esta tarefa?');">
+                    <button type="submit" class="botao botao-pequeno botao-perigo">Excluir</button>
+                </form>
+            </div>
+        </li>
+    </ul>
+</main>
+</body>
+</html>

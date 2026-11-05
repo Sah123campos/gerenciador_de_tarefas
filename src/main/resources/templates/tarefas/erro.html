@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head th:replace="~{fragments/layout :: head('Não encontrada')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: cabecalho}"></header>
+<main class="container estreito vazio">
+    <h1>Ops!</h1>
+    <p th:text="${erro}">Tarefa não encontrada.</p>
+    <a th:href="@{/tarefas}" class="botao botao-primario">Voltar para a lista</a>
+</main>
+</body>
+</html>
