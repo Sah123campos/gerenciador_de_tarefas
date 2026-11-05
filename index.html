@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerenciador de Tarefas</title>
+<meta name="description" content="Gerenciador de Tarefas — versão estática (HTML/CSS/JS) do projeto Spring Boot + Thymeleaf.">
+<style>
+:root {
+    --fundo: #f4f5f7;
+    --superficie: #ffffff;
+    --texto: #1f2328;
+    --texto-suave: #656d76;
+    --borda: #d8dee4;
+    --primaria: #2563eb;
+    --primaria-escura: #1d4ed8;
+    --sucesso: #16a34a;
+    --perigo: #dc2626;
+    --aviso: #d97706;
+    --raio: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fundo: #0f1115;
+        --superficie: #181b21;
+        --texto: #e6e8eb;
+        --texto-suave: #9aa3ad;
+        --borda: #2c313a;
+        --primaria: #3b82f6;
+        --primaria-escura: #60a5fa;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    line-height: 1.5;
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.container.estreito { max-width: 640px; }
+main.container { padding-top: 24px; padding-bottom: 48px; }
+h1 { font-size: 1.6rem; margin: 0 0 20px; }
+
+/* Cabeçalho */
+.cabecalho { background: var(--superficie); border-bottom: 1px solid var(--borda); }
+.cabecalho-conteudo { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.logo { font-weight: 700; font-size: 1.2rem; color: var(--texto); text-decoration: none; }
+
+/* Botões */
+.botao {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--borda);
+    background: var(--superficie); color: var(--texto);
+    font: inherit; font-size: .9rem; text-decoration: none; cursor: pointer;
+}
+.botao:hover { border-color: var(--texto-suave); }
+.botao-primario { background: var(--primaria); border-color: var(--primaria); color: #fff; }
+.botao-primario:hover { background: var(--primaria-escura); border-color: var(--primaria-escura); }
+.botao-link { border-color: transparent; background: transparent; color: var(--texto-suave); }
+.botao-perigo { color: var(--perigo); }
+.botao-perigo:hover { border-color: var(--perigo); }
+.botao-pequeno { padding: 4px 10px; font-size: .8rem; }
+
+/* Alerta */
+.alerta {
+    padding: 12px 16px; margin-bottom: 20px; border-radius: var(--raio);
+    background: color-mix(in srgb, var(--sucesso) 12%, var(--superficie));
+    border: 1px solid color-mix(in srgb, var(--sucesso) 40%, transparent);
+}
+
+/* Resumo */
+.resumo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.cartao {
+    font: inherit; text-align: left; cursor: pointer;
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: 14px; text-decoration: none; color: inherit; display: flex; flex-direction: column;
+}
+.cartao.ativo { border-color: var(--primaria); box-shadow: 0 0 0 1px var(--primaria); }
+.cartao .numero { font-size: 1.6rem; font-weight: 700; }
+.cartao .rotulo { color: var(--texto-suave); font-size: .85rem; }
+
+/* Filtros */
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filtros input[type=search] { flex: 1 1 240px; }
+
+input, select, textarea {
+    font: inherit; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--borda); background: var(--superficie); color: var(--texto);
+    width: 100%;
+}
+.filtros select, .filtros input { width: auto; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--primaria); outline-offset: -1px; }
+.invalido { border-color: var(--perigo); }
+
+/* Lista */
+.lista-tarefas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.tarefa {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: 14px;
+}
+.tarefa.atrasada { border-left: 4px solid var(--perigo); }
+.tarefa.concluida .tarefa-titulo { text-decoration: line-through; color: var(--texto-suave); }
+.tarefa.concluida { opacity: .75; }
+.tarefa form { margin: 0; }
+
+.check {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--borda);
+    background: transparent; color: #fff; cursor: pointer; font-size: .8rem; line-height: 1; padding: 0;
+    margin-top: 2px;
+}
+.check:hover { border-color: var(--sucesso); }
+.tarefa.concluida .check { background: var(--sucesso); border-color: var(--sucesso); }
+
+.tarefa-corpo { flex: 1; min-width: 0; }
+.tarefa-titulo { font-weight: 600; overflow-wrap: anywhere; }
+.tarefa-descricao { color: var(--texto-suave); font-size: .9rem; margin-top: 2px; white-space: pre-line; overflow-wrap: anywhere; }
+
+.etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.etiqueta {
+    font-size: .75rem; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--borda); color: var(--texto-suave);
+}
+.prioridade-alta { color: var(--perigo); border-color: color-mix(in srgb, var(--perigo) 45%, transparent); }
+.prioridade-media { color: var(--aviso); border-color: color-mix(in srgb, var(--aviso) 45%, transparent); }
+.status-em_andamento { color: var(--primaria); border-color: color-mix(in srgb, var(--primaria) 45%, transparent); }
+.status-concluida { color: var(--sucesso); border-color: color-mix(in srgb, var(--sucesso) 45%, transparent); }
+.tarefa.atrasada .etiqueta-data { color: var(--perigo); border-color: var(--perigo); }
+
+.acoes { display: flex; gap: 6px; flex-shrink: 0; }
+
+.vazio { text-align: center; padding: 48px 16px; color: var(--texto-suave); }
+
+/* Formulário */
+.formulario {
+    background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: 20px; display: flex; flex-direction: column; gap: 16px;
+}
+.campo { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.campo label { font-weight: 600; font-size: .9rem; }
+.linha { display: flex; gap: 12px; }
+.erro { color: var(--perigo); }
+.botoes { display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 640px) {
+    .resumo { grid-template-columns: repeat(2, 1fr); }
+    .linha { flex-direction: column; }
+    .tarefa { flex-wrap: wrap; }
+    .acoes { width: 100%; justify-content: flex-end; }
+    .filtros select, .filtros .botao { flex: 1; }
+}
+.oculto { display: none !important; }
+.aviso-demo { font-size: .8rem; color: var(--texto-suave); text-align: center; margin-top: 32px; }
+.aviso-demo a { color: var(--primaria); }
+</style>
+</head>
+<body>
+<header class="cabecalho">
+    <div class="container cabecalho-conteudo">
+        <a href="#/" class="logo">✓ Tarefas</a>
+        <a href="#/nova" class="botao botao-primario">+ Nova tarefa</a>
+    </div>
+</header>
+
+<!-- Lista -->
+<main id="tela-lista" class="container">
+    <div id="alerta" class="alerta oculto" role="status"></div>
+
+    <section class="resumo" id="resumo"></section>
+
+    <form class="filtros" id="filtros">
+        <input type="search" name="busca" placeholder="Buscar por título ou descrição…" aria-label="Buscar">
+        <select name="status" aria-label="Filtrar por status">
+            <option value="">Todos os status</option>
+        </select>
+        <select name="prioridade" aria-label="Filtrar por prioridade">
+            <option value="">Todas as prioridades</option>
+        </select>
+        <button type="submit" class="botao">Filtrar</button>
+        <button type="button" class="botao botao-link" id="limpar">Limpar</button>
+    </form>
+
+    <div id="vazio" class="vazio oculto">
+        <p>Nenhuma tarefa encontrada.</p>
+        <a href="#/nova" class="botao botao-primario">Criar uma tarefa</a>
+    </div>
+
+    <ul class="lista-tarefas" id="lista"></ul>
+
+    <p class="aviso-demo">
+        Versão estática para o GitHub Pages: as tarefas ficam salvas neste navegador.
+        A versão completa em Spring Boot + Thymeleaf está no
+        <a href="https://github.com/Sah123campos/gerenciador_de_tarefas">repositório</a>.
+    </p>
+</main>
+
+<!-- Formulário -->
+<main id="tela-form" class="container estreito oculto">
+    <h1 id="form-titulo">Nova tarefa</h1>
+    <form class="formulario" id="form" novalidate>
+        <div class="campo">
+            <label for="titulo">Título *</label>
+            <input type="text" id="titulo" name="titulo" maxlength="100">
+            <small class="erro oculto" id="erro-titulo"></small>
+        </div>
+        <div class="campo">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" rows="4" maxlength="1000"></textarea>
+        </div>
+        <div class="linha">
+            <div class="campo">
+                <label for="prioridade">Prioridade</label>
+                <select id="prioridade" name="prioridade"></select>
+            </div>
+            <div class="campo">
+                <label for="status">Status</label>
+                <select id="status" name="status"></select>
+            </div>
+            <div class="campo">
+                <label for="dataVencimento">Vencimento</label>
+                <input type="date" id="dataVencimento" name="dataVencimento">
+            </div>
+        </div>
+        <div class="botoes">
+            <a href="#/" class="botao botao-link">Cancelar</a>
+            <button type="submit" class="botao botao-primario">Salvar</button>
+        </div>
+    </form>
+</main>
+
+<script>
+(function () {
+    'use strict';
+
+    var PRIORIDADES = { BAIXA: 'Baixa', MEDIA: 'Média', ALTA: 'Alta' };
+    var STATUS = { PENDENTE: 'Pendente', EM_ANDAMENTO: 'Em andamento', CONCLUIDA: 'Concluída' };
+    var ORDEM_PRIORIDADE = { ALTA: 0, MEDIA: 1, BAIXA: 2 };
+    var CHAVE = 'gerenciador-tarefas';
+
+    // ---------- Armazenamento ----------
+    var memoria = null; // usado se o localStorage estiver indisponível
+
+    function carregar() {
+        if (memoria) return memoria;
+        try {
+            var dados = localStorage.getItem(CHAVE);
+            if (dados) return JSON.parse(dados);
+        } catch (e) { /* segue com dados de exemplo */ }
+        memoria = exemplos();
+        gravar(memoria);
+        return memoria;
+    }
+
+    function gravar(tarefas) {
+        memoria = tarefas;
+        try { localStorage.setItem(CHAVE, JSON.stringify(tarefas)); } catch (e) { /* só em memória */ }
+    }
+
+    function hojeISO(deslocamentoDias) {
+        var d = new Date();
+        d.setDate(d.getDate() + (deslocamentoDias || 0));
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function exemplos() {
+        var agora = new Date().toISOString();
+        return [
+            { id: 1, titulo: 'Estudar Spring Boot', descricao: 'Revisar controllers, services e JPA.', prioridade: 'ALTA', status: 'EM_ANDAMENTO', dataVencimento: hojeISO(2), criadaEm: agora },
+            { id: 2, titulo: 'Pagar conta de luz', descricao: '', prioridade: 'ALTA', status: 'PENDENTE', dataVencimento: hojeISO(-1), criadaEm: agora },
+            { id: 3, titulo: 'Fazer compras do mês', descricao: 'Arroz, feijão, café e frutas.', prioridade: 'MEDIA', status: 'PENDENTE', dataVencimento: hojeISO(5), criadaEm: agora },
+            { id: 4, titulo: 'Ler um capítulo do livro', descricao: '', prioridade: 'BAIXA', status: 'CONCLUIDA', dataVencimento: '', criadaEm: agora, concluidaEm: agora }
+        ];
+    }
+
+    // ---------- Regras ----------
+    function atrasada(t) {
+        return t.status !== 'CONCLUIDA' && t.dataVencimento && t.dataVencimento < hojeISO(0);
+    }
+
+    function ordenar(a, b) {
+        var c = (a.status === 'CONCLUIDA') - (b.status === 'CONCLUIDA');
+        if (c) return c;
+        c = (!a.dataVencimento) - (!b.dataVencimento);
+        if (c) return c;
+        if (a.dataVencimento !== b.dataVencimento) return a.dataVencimento < b.dataVencimento ? -1 : 1;
+        c = ORDEM_PRIORIDADE[a.prioridade] - ORDEM_PRIORIDADE[b.prioridade];
+        if (c) return c;
+        return a.criadaEm < b.criadaEm ? 1 : -1;
+    }
+
+    function formatarData(iso) {
+        var p = iso.split('-');
+        return p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    // ---------- Elementos ----------
+    var $ = function (id) { return document.getElementById(id); };
+    var filtrosForm = $('filtros');
+    var form = $('form');
+    var filtros = { busca: '', status: '', prioridade: '' };
+    var editandoId = null;
+
+    function preencherSelect(select, mapa) {
+        Object.keys(mapa).forEach(function (k) {
+            var o = document.createElement('option');
+            o.value = k; o.textContent = mapa[k];
+            select.appendChild(o);
+        });
+    }
+    preencherSelect(filtrosForm.status, STATUS);
+    preencherSelect(filtrosForm.prioridade, PRIORIDADES);
+    preencherSelect(form.prioridade, PRIORIDADES);
+    preencherSelect(form.status, STATUS);
+
+    function el(tag, classe, texto) {
+        var e = document.createElement(tag);
+        if (classe) e.className = classe;
+        if (texto != null) e.textContent = texto;
+        return e;
+    }
+
+    function mostrarAlerta(texto) {
+        var a = $('alerta');
+        a.textContent = texto;
+        a.classList.remove('oculto');
+        clearTimeout(mostrarAlerta.t);
+        mostrarAlerta.t = setTimeout(function () { a.classList.add('oculto'); }, 3500);
+    }
+
+    // ---------- Renderização da lista ----------
+    function renderizarLista() {
+        var tarefas = carregar();
+
+        // Resumo
+        var resumo = $('resumo');
+        resumo.innerHTML = '';
+        var cartoes = [{ chave: '', rotulo: 'Total', n: tarefas.length }];
+        Object.keys(STATUS).forEach(function (s) {
+            cartoes.push({ chave: s, rotulo: STATUS[s], n: tarefas.filter(function (t) { return t.status === s; }).length });
+        });
+        cartoes.forEach(function (c) {
+            var b = el('button', 'cartao' + (filtros.status === c.chave ? ' ativo' : ''));
+            b.type = 'button';
+            b.appendChild(el('span', 'numero', c.n));
+            b.appendChild(el('span', 'rotulo', c.rotulo));
+            b.addEventListener('click', function () {
+                filtros.status = c.chave;
+                filtrosForm.status.value = c.chave;
+                renderizarLista();
+            });
+            resumo.appendChild(b);
+        });
+
+        // Filtragem
+        var termo = filtros.busca.trim().toLowerCase();
+        var visiveis = tarefas.filter(function (t) {
+            return (!filtros.status || t.status === filtros.status)
+                && (!filtros.prioridade || t.prioridade === filtros.prioridade)
+                && (!termo || t.titulo.toLowerCase().indexOf(termo) >= 0
+                    || (t.descricao || '').toLowerCase().indexOf(termo) >= 0);
+        }).sort(ordenar);
+
+        var lista = $('lista');
+        lista.innerHTML = '';
+        $('vazio').classList.toggle('oculto', visiveis.length > 0);
+
+        visiveis.forEach(function (t) {
+            var concluida = t.status === 'CONCLUIDA';
+            var li = el('li', 'tarefa' + (concluida ? ' concluida' : atrasada(t) ? ' atrasada' : ''));
+
+            var check = el('button', 'check', concluida ? '✓' : '');
+            check.type = 'button';
+            check.title = concluida ? 'Reabrir tarefa' : 'Marcar como concluída';
+            check.addEventListener('click', function () { alternar(t.id); });
+            li.appendChild(check);
+
+            var corpo = el('div', 'tarefa-corpo');
+            corpo.appendChild(el('div', 'tarefa-titulo', t.titulo));
+            if (t.descricao) corpo.appendChild(el('div', 'tarefa-descricao', t.descricao));
+            var etiquetas = el('div', 'etiquetas');
+            etiquetas.appendChild(el('span', 'etiqueta prioridade-' + t.prioridade.toLowerCase(), PRIORIDADES[t.prioridade]));
+            etiquetas.appendChild(el('span', 'etiqueta status-' + t.status.toLowerCase(), STATUS[t.status]));
+            if (t.dataVencimento) {
+                etiquetas.appendChild(el('span', 'etiqueta etiqueta-data',
+                    (atrasada(t) ? 'Atrasada · ' : 'Vence ') + formatarData(t.dataVencimento)));
+            }
+            corpo.appendChild(etiquetas);
+            li.appendChild(corpo);
+
+            var acoes = el('div', 'acoes');
+            var editar = el('a', 'botao botao-pequeno', 'Editar');
+            editar.href = '#/editar/' + t.id;
+            var excluir = el('button', 'botao botao-pequeno botao-perigo', 'Excluir');
+            excluir.type = 'button';
+            excluir.addEventListener('click', function () {
+                if (confirm('Excluir esta tarefa?')) {
+                    gravar(carregar().filter(function (x) { return x.id !== t.id; }));
+                    mostrarAlerta('Tarefa excluída.');
+                    renderizarLista();
+                }
+            });
+            acoes.appendChild(editar);
+            acoes.appendChild(excluir);
+            li.appendChild(acoes);
+
+            lista.appendChild(li);
+        });
+    }
+
+    function alternar(id) {
+        var tarefas = carregar();
+        tarefas.forEach(function (t) {
+            if (t.id === id) {
+                t.status = t.status === 'CONCLUIDA' ? 'PENDENTE' : 'CONCLUIDA';
+                t.concluidaEm = t.status === 'CONCLUIDA' ? new Date().toISOString() : null;
+            }
+        });
+        gravar(tarefas);
+        renderizarLista();
+    }
+
+    // ---------- Formulário ----------
+    function limparErro() {
+        $('erro-titulo').classList.add('oculto');
+        form.titulo.classList.remove('invalido');
+    }
+
+    function abrirFormulario(id) {
+        limparErro();
+        var t = id != null ? carregar().find(function (x) { return x.id === id; }) : null;
+        if (id != null && !t) { location.hash = '#/'; mostrarAlerta('Tarefa não encontrada.'); return; }
+        editandoId = t ? t.id : null;
+        $('form-titulo').textContent = t ? 'Editar tarefa' : 'Nova tarefa';
+        document.title = (t ? 'Editar tarefa' : 'Nova tarefa') + ' · Gerenciador de Tarefas';
+        form.titulo.value = t ? t.titulo : '';
+        form.descricao.value = t ? t.descricao || '' : '';
+        form.prioridade.value = t ? t.prioridade : 'MEDIA';
+        form.status.value = t ? t.status : 'PENDENTE';
+        form.dataVencimento.value = t ? t.dataVencimento || '' : '';
+        form.titulo.focus();
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var titulo = form.titulo.value.trim();
+        if (!titulo) {
+            $('erro-titulo').textContent = 'O título é obrigatório';
+            $('erro-titulo').classList.remove('oculto');
+            form.titulo.classList.add('invalido');
+            form.titulo.focus();
+            return;
+        }
+        var tarefas = carregar();
+        var dados = {
+            titulo: titulo,
+            descricao: form.descricao.value.trim(),
+            prioridade: form.prioridade.value,
+            status: form.status.value,
+            dataVencimento: form.dataVencimento.value
+        };
+        if (editandoId != null) {
+            tarefas.forEach(function (t) {
+                if (t.id === editandoId) {
+                    var eraConcluida = t.status === 'CONCLUIDA';
+                    Object.assign(t, dados);
+                    if (t.status !== 'CONCLUIDA') t.concluidaEm = null;
+                    else if (!eraConcluida) t.concluidaEm = new Date().toISOString();
+                }
+            });
+            mostrarAlerta('Tarefa atualizada com sucesso!');
+        } else {
+            var novoId = tarefas.reduce(function (m, t) { return Math.max(m, t.id); }, 0) + 1;
+            dados.id = novoId;
+            dados.criadaEm = new Date().toISOString();
+            if (dados.status === 'CONCLUIDA') dados.concluidaEm = dados.criadaEm;
+            tarefas.push(dados);
+            mostrarAlerta('Tarefa criada com sucesso!');
+        }
+        gravar(tarefas);
+        location.hash = '#/';
+    });
+
+    form.titulo.addEventListener('input', limparErro);
+
+    // ---------- Filtros ----------
+    filtrosForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        filtros.busca = filtrosForm.busca.value;
+        filtros.status = filtrosForm.status.value;
+        filtros.prioridade = filtrosForm.prioridade.value;
+        renderizarLista();
+    });
+    filtrosForm.busca.addEventListener('input', function () {
+        filtros.busca = filtrosForm.busca.value;
+        renderizarLista();
+    });
+    $('limpar').addEventListener('click', function () {
+        filtrosForm.reset();
+        filtros = { busca: '', status: '', prioridade: '' };
+        renderizarLista();
+    });
+
+    // ---------- Navegação ----------
+    function rotear() {
+        var h = location.hash;
+        var m = h.match(/^#\/editar\/(\d+)$/);
+        var noForm = h === '#/nova' || !!m;
+        $('tela-lista').classList.toggle('oculto', noForm);
+        $('tela-form').classList.toggle('oculto', !noForm);
+        if (noForm) {
+            abrirFormulario(m ? Number(m[1]) : null);
+        } else {
+            document.title = 'Minhas tarefas · Gerenciador de Tarefas';
+            renderizarLista();
+        }
+        window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('hashchange', rotear);
+    rotear();
+})();
+</script>
+</body>
+</html>

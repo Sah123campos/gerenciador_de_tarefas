@@ -2,6 +2,12 @@
 
 Aplicação web para gerenciar tarefas, feita com **Spring Boot 3**, **Thymeleaf**, **Spring Data JPA** e banco **H2**.
 
+🔗 **Demonstração online:** https://sah123campos.github.io/gerenciador_de_tarefas/
+
+> O GitHub Pages só hospeda arquivos estáticos e não executa Java. Por isso, a demonstração online é o
+> `index.html` da raiz: uma versão em HTML/CSS/JavaScript com o mesmo visual e as mesmas funções, que salva
+> as tarefas no navegador (localStorage). A aplicação Spring Boot completa fica em `src/` e roda com Maven.
+
 ## Funcionalidades
 - Criar, editar e excluir tarefas (título, descrição, prioridade, status e vencimento)
 - Marcar como concluída / reabrir com um clique
